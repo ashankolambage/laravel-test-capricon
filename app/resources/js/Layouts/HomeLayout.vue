@@ -31,13 +31,25 @@ const showingNavigationDropdown = ref(false);
                             <!-- Navigation Links -->
                             <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                                 <div class="sm:fixed sm:top-0 sm:right-0 p-6 text-end">
-                                    <Link :href="route('login')" class="font-semibold text-gray-600 hover:text-gray-900  focus:outline focus:outline-2 focus:rounded-sm">
+                                    <div v-if="!$page.props.auth.user">
+                                        <Link :href="route('login')" class="font-semibold text-gray-600 hover:text-gray-900  focus:outline focus:outline-2 focus:rounded-sm">
                                         Log in
-                                    </Link>
+                                        </Link>
 
-                                    <Link :href="route('register')" class="ms-4 font-semibold text-gray-600 hover:text-gray-900 focus:outline focus:outline-2 focus:rounded-sm">
-                                        Register
-                                    </Link>
+                                        <Link :href="route('register')" class="ms-4 font-semibold text-gray-600 hover:text-gray-900 focus:outline focus:outline-2 focus:rounded-sm">
+                                            Register
+                                        </Link>
+                                    </div>
+                                    
+                                    <div v-else class="dropdown">
+                                        <NavLink :href="route('dashboard')" :active="route().current('dashboard')">
+                                            Dashboard
+                                        </NavLink>
+
+                                        <NavLink :href="route('logout')" method="post" as="button">
+                                            Log Out
+                                        </NavLink>
+                                    </div>
                                 </div>
                             </div>
                         </div>
