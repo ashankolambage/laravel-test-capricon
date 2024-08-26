@@ -4,10 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Post;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class PostController extends Controller
 {
@@ -69,7 +72,7 @@ class PostController extends Controller
 
         if ($request->hasFile('image')) {
             $image = $request->file('image');
-            $newFileName = Str::random(10) . '.' . $image->getClientOriginalExtension();
+            $newFileName = time() . '-' . Str::random(10) . '.' . $image->getClientOriginalExtension();
             $imagePath = $image->move(public_path('uploads/blog'), $newFileName);
             $post->image = $newFileName;
         }
@@ -78,5 +81,79 @@ class PostController extends Controller
         $post->save();
 
         return redirect()->route('posts.create')->with('success', 'Post created successfully.');
+    }
+
+    public function destroy($id)
+    {
+        try {
+            $post = Post::findOrFail($id);
+            if ($post->image && file_exists(public_path('uploads/blog/' . $post->image))) {
+                unlink(public_path('uploads/blog/' . $post->image));
+            }
+
+            $post->delete();
+            return redirect()->route('dashboard')->with('success', 'Post deleted successfully.');
+        } catch (ModelNotFoundException $e) {
+            Log::error('Post not found: ' . $e->getMessage());
+            return redirect()->route('dashboard')->with('error', 'Post not found.');
+        } catch (\Exception $e) {
+            Log::error('Error deleting post: ' . $e->getMessage());
+            return redirect()->route('dashboard')->with('error', 'There was an error deleting the post.');
+        }
+    }
+
+    public function edit($id)
+    {
+        try {
+            $post = Post::findOrFail($id);
+            $categories = Category::all();
+            return Inertia::render('PostsEdit', [
+                'post' => $post,
+                'categories' => $categories
+            ]);
+        } catch (ModelNotFoundException $e) {
+            Log::error('Post not found: ' . $e->getMessage());
+            return redirect()->route('dashboard')->with('error', 'Post not found.');
+        }
+    }
+
+    public function update(Request $request, $id)
+    {
+        try {
+            $validated = $request->validate([
+                'title' => 'required|string|max:255',
+                'category_id' => 'required|integer|exists:categories,id',
+                'content' => 'required|string',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            ]);
+
+            $post = Post::findOrFail($id);
+
+            $post->title = $validated['title'];
+            $post->category_id = $validated['category_id'];
+            $post->content = $validated['content'];
+
+            if ($request->hasFile('image')) {
+                if ($post->image && file_exists(public_path('uploads/blog/' . $post->image))) {
+                    unlink(public_path('uploads/blog/' . $post->image));
+                }
+
+                $image = $request->file('image');
+                $imageName = time() . '-' . Str::random(10) . '.' . $image->getClientOriginalExtension();
+                $image->move(public_path('uploads/blog'), $imageName);
+                $post->image = $imageName;
+            }
+
+            $post->save();
+            return redirect()->route('dashboard')->with('success', 'Post updated successfully.');
+        } catch (ModelNotFoundException $e) {
+            Log::error('Post not found: ' . $e->getMessage());
+            return redirect()->route('dashboard')->with('error', 'Post not found.');
+        } catch (ValidationException $e) {
+            return redirect()->back()->withErrors($e->errors())->withInput();
+        } catch (\Exception $e) {
+            Log::error('Error updating post: ' . $e->getMessage());
+            return redirect()->route('dashboard')->with('error', 'There was an error updating the post.');
+        }
     }
 }
