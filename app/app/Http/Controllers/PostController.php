@@ -14,20 +14,24 @@ class PostController extends Controller
     public function home()
     {
         $posts = Post::all();
+        $categories = Category::all();
 
         return Inertia::render('Home', [
             'posts' => $posts,
+            'categories' => $categories,
         ]);
     }
 
     public function dashboard()
     {
         $user = Auth::user();
+        $categories = Category::all();
         
         $posts = Post::where('user_id', $user->id)->get();
 
         return Inertia::render('Dashboard', [
             'posts' => $posts,
+            'categories' => $categories,
         ]);
     }
 

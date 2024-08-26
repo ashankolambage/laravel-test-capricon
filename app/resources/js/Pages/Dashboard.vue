@@ -1,10 +1,22 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head } from '@inertiajs/vue3';
-import { defineProps } from 'vue';
+import { defineProps, ref, watch } from 'vue';
 
 const props = defineProps({
     posts: Array,
+    categories: Array,
+});
+
+const selectedCategory = ref('');
+const filteredPosts = ref(props.posts);
+
+watch(selectedCategory, (newCategory) => {
+    if (newCategory === '') {
+        filteredPosts.value = props.posts;
+    } else {
+        filteredPosts.value = props.posts.filter(post => post.category_id === newCategory);
+    }
 });
 </script>
 
@@ -24,8 +36,16 @@ const props = defineProps({
                             <span class="text-lg">My Post List</span>
                             <a href="/posts/create" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Create New Post</a>
                         </div>
+                        <div class="mb-4">
+                            <select v-model="selectedCategory" class="border px-8 py-2 rounded">
+                                <option value="">All Categories</option>
+                                <option v-for="category in props.categories" :key="category.id" :value="category.id">
+                                    {{ category.name }}
+                                </option>
+                            </select>
+                        </div>
                         <ul class="p-6">
-                            <li v-for="post in props.posts" :key="post.id" class="border-b py-4">
+                            <li v-for="post in filteredPosts" :key="post.id" class="border-b py-4">
                                 <a :href="'/posts/' + post.slug" class="text-blue-600 hover:underline">
                                     {{ post.title }}
                                 </a>
