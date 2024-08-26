@@ -11,6 +11,19 @@ class PostController extends Controller
 {
     public function home()
     {
-        return Inertia::render('Home');
+        $posts = Post::all();
+
+        return Inertia::render('Home', [
+            'posts' => $posts,
+        ]);
+    }
+
+    public function show($slug)
+    {
+        $post = Post::where('slug', $slug)->firstOrFail();
+
+        return Inertia::render('PostShow', [
+            'post' => $post,
+        ]);
     }
 }
