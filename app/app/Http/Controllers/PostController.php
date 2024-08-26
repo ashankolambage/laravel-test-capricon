@@ -68,7 +68,16 @@ class PostController extends Controller
         $post->title = $request->input('title');
         $post->content = $request->input('content');
         $post->category_id = $request->input('category_id');
-        $post->slug = Str::slug($request->input('title'));
+        
+        $slug = Str::slug($request->input('title'));
+        $originalSlug = $slug;
+
+        $counter = 1;
+        while (Post::where('slug', $slug)->exists()) {
+            $slug = $originalSlug . '-' . $counter;
+            $counter++;
+        }
+        $post->slug = $slug;
 
         if ($request->hasFile('image')) {
             $image = $request->file('image');
