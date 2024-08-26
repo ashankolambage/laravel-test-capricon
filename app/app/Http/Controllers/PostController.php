@@ -96,6 +96,11 @@ class PostController extends Controller
     {
         try {
             $post = Post::findOrFail($id);
+
+            if ($post->user_id !== auth()->id()) {
+                return redirect()->route('dashboard')->with('error', 'You are not authorized to delete this post.');
+            }
+            
             if ($post->image && file_exists(public_path('uploads/blog/' . $post->image))) {
                 unlink(public_path('uploads/blog/' . $post->image));
             }
@@ -115,6 +120,11 @@ class PostController extends Controller
     {
         try {
             $post = Post::findOrFail($id);
+
+            if ($post->user_id !== auth()->id()) {
+                return redirect()->route('dashboard')->with('error', 'You are not authorized to edit this post.');
+            }
+
             $categories = Category::all();
             return Inertia::render('PostsEdit', [
                 'post' => $post,
@@ -137,6 +147,10 @@ class PostController extends Controller
             ]);
 
             $post = Post::findOrFail($id);
+
+            if ($post->user_id !== auth()->id()) {
+                return redirect()->route('dashboard')->with('error', 'You are not authorized to edit this post.');
+            }
 
             $post->title = $validated['title'];
             $post->category_id = $validated['category_id'];
