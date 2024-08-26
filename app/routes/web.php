@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\CommentController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
@@ -24,5 +25,6 @@ Route::middleware('auth')->group(function () {
 Route::get('/', [PostController::class, 'home'])->name('home');
 Route::get('/posts/{slug}', [PostController::class, 'show'])->name('posts.show');
 Route::get('/categories/get-categories', [CategoryController::class, 'getCategories'])->name('categories.get-categories');
+Route::post('/posts/{post}/comments', [CommentController::class, 'store'])->middleware('auth')->name('comments.store');
 
 require __DIR__.'/auth.php';
