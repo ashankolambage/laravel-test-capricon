@@ -4,6 +4,6 @@ GID := $(shell id -g)
 down:
 	UID=${UID} GID=${GID} docker-compose -f docker-compose.yml down --remove-orphans
 shell:
-	UID=${UID} GID=${GID} docker-compose -f docker-compose.yml exec -u ${UID}:${GID} wifisignalmonitor-app sh
+	UID=${UID} GID=${GID} docker-compose -f docker-compose.yml exec -u ${UID}:${GID} laravel-test-app sh
 up:
 	UID=${UID} GID=${GID} docker-compose -f docker-compose.yml up --build -d --remove-orphans
